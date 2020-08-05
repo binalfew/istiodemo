@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redsapi
+  labels:
+    app: redsapi
+    service: redsapi
+spec:
+  ports:
+    - port: 5101
+      name: http
+  selector:
+    app: redsapi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: redsapi
+  labels:
+    account: redsapi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redsapi-v1
+  labels:
+    app: redsapi
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redsapi
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: redsapi
+        version: v1
+    spec:
+      serviceAccountName: redsapi
+      containers:
+        - name: redsapi
+          image: reds/api:latest
+          imagePullPolicy: IfNotPresent
+          terminationMessagePolicy: FallbackToLogsOnError
+          env:
+            - name: PATH_BASE
+              value: /redsapi
+            - name: ASPNETCORE_URLS
+              value: http://0.0.0.0:80
+            - name: ConnectionString
+              valueFrom:
+                configMapKeyRef:
+                  name: redscfg
+                  key: ConnectionString
+            - name: EventBusConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: redscfg
+                  key: EventBusConnection
+            - name: EventBusRetryCount
+              valueFrom:
+                configMapKeyRef:
+                  name: redscfg
+                  key: EventBusRetryCount
+            - name: SubscriptionClientName
+              valueFrom:
+                configMapKeyRef:
+                  name: redscfg
+                  key: SubscriptionClientName
+          ports:
+            - containerPort: 80

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redscfg
+  labels:
+    app: config
+data:
+  ConnectionString: "Server=sql;Database=Reds;User Id=sa;Password=P@ssw0rd;"
+  EventBusConnection: "rabbitmq" 
+  EventBusRetryCount: "5"
+  SubscriptionClientName: "Reds"
